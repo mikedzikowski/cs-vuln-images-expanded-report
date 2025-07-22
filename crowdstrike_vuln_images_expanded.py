@@ -122,7 +122,6 @@ class CrowdStrikeAPI:
         print(f"  DEBUG - Job ID for download: {job_id}")
         print(f"  DEBUG - Token: {self.access_token[:10]}...")
         
-        # Use 'id' parameter instead of 'jobId'
         params = {'id': job_id}
         url = f"{base_url}?{urlencode(params)}"
         print(f"  DEBUG - Download URL: {url}")
@@ -131,7 +130,6 @@ class CrowdStrikeAPI:
         attempt = 0
         
         while attempt < max_attempts:
-            # Check if the export is ready
             if not self.check_export_status(job_id):
                 print(f"  Export not ready, waiting... (Attempt {attempt + 1}/{max_attempts})")
                 time.sleep(30)
@@ -140,7 +138,6 @@ class CrowdStrikeAPI:
                 
             try:
                 print(f"  DEBUG - Attempting download, attempt {attempt + 1}")
-                # Make sure to include headers with token
                 response = requests.get(
                     url,
                     headers=headers
@@ -151,9 +148,11 @@ class CrowdStrikeAPI:
                 print(f"  DEBUG - Response text: {response.text[:200]}...")
                 
                 if response.status_code == 200:
-                    return response.json()
+                    data = response.json()
+                    print(f"  DEBUG - Downloaded data type: {type(data)}")
+                    print(f"  DEBUG - Data length: {len(data) if isinstance(data, list) else 'N/A'}")
+                    return data
                 elif response.status_code == 401:
-                    # Token might have expired, try to refresh
                     print("  Token expired, refreshing...")
                     if self.get_auth_token():
                         headers["Authorization"] = f"Bearer {self.access_token}"
@@ -182,7 +181,6 @@ class CrowdStrikeAPI:
         attempt = 0
         
         while attempt < max_attempts:
-            # Create export job
             job_id = self.create_export_job(filter_pattern)
             if not job_id:
                 if "Quota of 1 job(s) in-progress reached" in str(job_id):
@@ -192,13 +190,13 @@ class CrowdStrikeAPI:
                     continue
                 return None
             
-            # Initial delay to allow export job to start
             time.sleep(15)
             
-            # Download and return the export data
             export_data = self.download_export(job_id)
             if export_data:
                 print(f"  Export completed for pattern: {filter_pattern}")
+                print(f"  DEBUG - Export data type: {type(export_data)}")
+                print(f"  DEBUG - Export data length: {len(export_data) if isinstance(export_data, (list, dict)) else 'N/A'}")
                 return export_data
             
             attempt += 1
@@ -212,21 +210,23 @@ class CrowdStrikeAPI:
 def save_to_json(data, filename='image_assessments.json'):
     with open(filename, 'w') as f:
         json.dump(data, f, indent=2)
-    print(f"Saved {len(data)} records to {filename}")
+    print(f"Saved {len(data) if isinstance(data, (list, dict)) else 'N/A'} records to {filename}")
 
 def save_to_csv(data, filename='image_assessments.csv'):
     if not data:
         return
     
-    headers = data[0].keys() if data else []
-    with open(filename, 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=headers)
-        writer.writeheader()
-        writer.writerows(data)
-    print(f"Saved {len(data)} records to {filename}")
+    if isinstance(data, list):
+        headers = data[0].keys() if data and isinstance(data[0], dict) else []
+        with open(filename, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=headers)
+            writer.writeheader()
+            writer.writerows(data)
+        print(f"Saved {len(data)} records to {filename}")
+    else:
+        print(f"Cannot save to CSV - data is not a list: {type(data)}")
 
 def main():
-    # Replace with your credentials
     client_id = "YOUR_CLIENT_ID"
     client_secret = "YOUR_CLIENT_SECRET"
     
@@ -236,18 +236,25 @@ def main():
         print("Failed to authenticate. Exiting.")
         return
 
-    # List to store all export data
     all_export_data = []
     hex_digits = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f']
     
     for digit in hex_digits:
         export_data = cs_api.process_pattern_with_export(digit)
-        if export_data and 'resources' in export_data:
-            all_export_data.extend(export_data['resources'])
+        if export_data:
+            if isinstance(export_data, list):
+                all_export_data.extend(export_data)
+            else:
+                all_export_data.append(export_data)
+            print(f"DEBUG - Current total records: {len(all_export_data)}")
     
-    # Save combined results
     if all_export_data:
-        # Create final combined report
+        print(f"\nProcessing {len(all_export_data)} total records...")
+        
+        # Save raw data
+        save_to_json(all_export_data, 'raw_export_data.json')
+        
+        # Create final report
         final_report = {
             "meta": {
                 "total_records": len(all_export_data),
@@ -257,18 +264,11 @@ def main():
             "resources": all_export_data
         }
         
-        # Save to JSON
-        with open('combined_export_report.json', 'w') as f:
-            json.dump(final_report, f, indent=2)
-        print(f"\nTotal records collected: {len(all_export_data)}")
-        print("Results saved to combined_export_report.json")
+        # Save processed data
+        save_to_json(final_report, 'combined_export_report.json')
+        save_to_csv(all_export_data, 'combined_export_report.csv')
         
-        # Save to CSV if needed
-        try:
-            save_to_csv(all_export_data, 'combined_export_report.csv')
-            print("Results also saved to combined_export_report.csv")
-        except Exception as e:
-            print(f"Note: Could not save to CSV due to data structure: {str(e)}")
+        print(f"\nProcessing complete. Total records: {len(all_export_data)}")
     else:
         print("\nNo results found")
 
