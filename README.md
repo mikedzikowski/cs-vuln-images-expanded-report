@@ -125,7 +125,7 @@ Enable detailed output by setting `DEBUG_MODE = True`:
 MIT
 
 ## 👨‍💻 Author
-@mikedzikowski/@crowdstrike
+[@mikedzikowski/@crowdstrike]
 
 ## 🙏 Acknowledgments
 - CrowdStrike API Documentation
