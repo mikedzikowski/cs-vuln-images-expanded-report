@@ -11,6 +11,9 @@ This tool automates the process of exporting image assessment data from CrowdStr
 - 💾 Outputs in both JSON and CSV formats
 - 📝 Detailed logging and error handling
 
+## Example
+<img width="472" height="365" alt="image" src="https://github.com/user-attachments/assets/66b524ab-f475-4adb-baab-c332b749e9f9" />
+
 ## 🚀 Prerequisites
 - Python 3.6+
 - CrowdStrike API Client ID and Secret with Container Security access
