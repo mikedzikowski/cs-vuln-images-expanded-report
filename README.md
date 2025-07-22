@@ -122,14 +122,13 @@ Enable detailed output by setting `DEBUG_MODE = True`:
 5. Create a new Pull Request
 
 ## 📜 License
-[Your chosen license]
+MIT
 
 ## 👨‍💻 Author
-[Your Name/Organization]
+[MikeDzikowski/CrowdStrike]
 
 ## 🙏 Acknowledgments
 - CrowdStrike API Documentation
-- [Other acknowledgments]
 
 ## 💬 Support
 For issues and feature requests, please use the GitHub issue tracker.
@@ -155,4 +154,3 @@ Made with ❤️ for the CrowdStrike Community
 
 ---
 
-**Note**: Replace placeholder text (in brackets) with your specific information before publishing.
