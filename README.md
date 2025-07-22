@@ -14,7 +14,8 @@ This tool automates the process of exporting image assessment data from CrowdStr
 - 🛡️ Comprehensive error handling and recovery
 
 ## Example Run
-<img width="452" height="264" alt="image" src="https://github.com/user-attachments/assets/fd05f2cd-8cc5-48a4-ba5d-1924a88199f4" />
+
+<img width="504" height="273" alt="image" src="https://github.com/user-attachments/assets/55fcd017-ed55-424d-9e23-dc6e6702ef67" />
 
 
 ## 🚀 Prerequisites
